@@ -1,0 +1,7 @@
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+UsePAM yes
+PrintMotd no
+AcceptEnv LANG LC_*
+ClientAliveInterval 120
+UseDNS yes

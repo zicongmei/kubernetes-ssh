@@ -1,0 +1,6 @@
+Include /etc/ssh/ssh_config.d/*.conf
+Host *
+    SendEnv LANG LC_*
+    StrictHostKeyChecking no
+    UserKnownHostsFile=/dev/null
+    GSSAPIAuthentication yes

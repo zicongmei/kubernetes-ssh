@@ -1,0 +1,75 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: {{ .Name }}
+  template:
+    metadata:
+      labels:
+        run: {{ .Name }}
+    spec:
+      initContainers:
+      - command:
+        - bash
+        args:
+        - /etc/kssh/bootstrapt.sh
+        image: {{ .Image }}
+        imagePullPolicy: Always
+        name: {{ .Name }}-init
+        volumeMounts:
+        - mountPath: /tmp/ssh
+          name: ssh
+          readOnly: true
+        - mountPath: /etc/kssh
+          name: bootstrapt
+      containers:
+      - image: {{ .Image }}
+        imagePullPolicy: Always
+        name: {{ .Name }}
+        ports:
+        - containerPort: {{ .Port }}
+          name: {{ .Name }}
+          protocol: TCP
+      volumes:
+      - name: ssh
+        secret:
+          defaultMode: 420
+          secretName: {{ .Name }}
+      - configMap:
+          defaultMode: 420
+          name: {{ .BootstraptConfigMapName }}
+        name: bootstrapt
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    run: {{ .Name }}
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+spec:
+  clusterIP: None
+  ports:
+  - port: {{ .Port }}
+    protocol: TCP
+    targetPort: {{ .Port }}
+  selector:
+    run: {{ .Name }}
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ .Name }}
+  namespace: {{ .Namespace }}
+type: Opaque
+data:
+  authorized_keys: {{ .AuthorizedKeys }}
+  id_rsa: {{ .SSHPrivateKey }}
+  id_rsa.pub: {{ .SSHPublicKey }}

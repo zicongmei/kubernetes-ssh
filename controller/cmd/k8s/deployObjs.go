@@ -2,16 +2,11 @@ package k8s
 
 import (
 	"context"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/x509"
 	_ "embed"
-	"encoding/pem"
 	"fmt"
 	"path"
 
 	"github.com/golang/glog"
-	"golang.org/x/crypto/ssh"
 	appsV1 "k8s.io/api/apps/v1"
 	coreV1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -280,7 +275,7 @@ func createSecret(
 	}
 }
 
-//go:embed pod-bootstrapt.sh
+//go:embed templates/pod-bootstrapt.sh
 var podBootstrapt string
 
 func createConfigMaps(namespace string) []*coreV1.ConfigMap {
@@ -295,24 +290,4 @@ func createConfigMaps(namespace string) []*coreV1.ConfigMap {
 			},
 		},
 	}
-}
-
-func generateSSHKey() ([]byte, []byte) {
-	privateKey, err := rsa.GenerateKey(rand.Reader, sshSize)
-	if err != nil {
-		glog.Fatalf("failed to generate private key: %v", err)
-	}
-
-	privateKeyBytes := pem.EncodeToMemory(&pem.Block{
-		Type:    "RSA PRIVATE KEY",
-		Headers: nil,
-		Bytes:   x509.MarshalPKCS1PrivateKey(privateKey),
-	})
-
-	publicKey, err := ssh.NewPublicKey(&privateKey.PublicKey)
-	if err != nil {
-		glog.Fatalf("failed to generate public key: %v", err)
-	}
-	publicKeyBytes := ssh.MarshalAuthorizedKey(publicKey)
-	return privateKeyBytes, publicKeyBytes
 }

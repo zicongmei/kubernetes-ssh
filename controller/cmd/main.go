@@ -29,8 +29,9 @@ func init() {
 
 func main() {
 	flag.Set("logtostderr", "true")
-	cs := buildK8sClient(kubeconfigFlag)
-	k8s.DeployK8sObjects(cs, namespaceFlag, namePrefixFlag, podNumFlag)
+	clients := k8s.New(kubeconfigFlag)
+	k8s.DeployYaml(clients, namespaceFlag, namePrefixFlag, podNumFlag)
+	//k8s.DeployK8sObjects(clients.GetClientSet(), namespaceFlag, namePrefixFlag, podNumFlag)
 }
 
 func buildK8sClient(kubeconfigPath string) *kubernetes.Clientset {
